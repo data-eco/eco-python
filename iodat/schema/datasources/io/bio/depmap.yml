@@ -1,0 +1,29 @@
+#
+# Cancer DepMap Datasource
+#
+name: "depmap"
+datasets:
+  - name: "gene_effect"
+    title: "Cancer DepMap CRISPR"
+    description: "Post-Chronos Combined Achilles & Sanger SCORE Chronos data"
+      #Columns: genes in the format "HUGO (Entrez)" - Rows: cell lines (Broad IDs)"
+    datasource: "depmap"
+    experiment: "crispr"
+    processing: ""
+    path: "/data/raw/depmap/21q3/CRISPR_gene_effect.csv"
+    datatype: "experimental_dataset"
+    assay: "crispr"
+    platform: "???"
+    provenance:
+      - source: "DepMap"
+        version: "21Q3"
+        url: "https://depmap.org/portal/download/"
+      - action: "correction" 
+        url: "https://cancerdatascience.org/blog/posts/ceres-chronos/"
+        doi: "https://www.biorxiv.org/content/10.1101/2021.02.25.432728v1"
+    rows:
+      name: "cell_line"
+      path: "/data/raw/depmap/21q3/sample_info.csv"
+    columns:
+      name: "gene"
+      path: ".."

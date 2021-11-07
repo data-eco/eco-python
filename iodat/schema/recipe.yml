@@ -1,0 +1,162 @@
+id:
+  type: 'string'
+  required: true
+title:
+  type: 'string'
+  required: true
+datasource:
+  type: 'dict'
+  required: true
+  schema:
+    name:
+      type: 'string'
+      required: true
+    title:
+      type: 'string'
+      required: true
+    url:
+      type: 'string'
+experiment:
+  type: 'dict'
+  required: true
+  schema:
+    name:
+      type: 'string'
+      required: true
+    title:
+      type: 'string'
+      required: true
+    url:
+      type: 'string'
+processing:
+  type: 'string'
+  default: 'raw'
+datatype:
+  type: 'string'
+  required: true
+  allowed:
+    - 'experimental_dataset'
+    - 'analysis_result'
+    - 'generic_dataset'
+assay:
+  type: 'string'
+analysis:
+  type: 'string'
+platform:
+  type: 'string'
+measurement:
+  type: 'string'
+reference:
+  type: 'string'
+url:
+  type: 'string'
+doi:
+  type: 'list'
+fields:
+  type: 'list'
+  schema:
+    type: 'dict'
+    schema:
+      name:
+        type: 'string'
+      type:
+        type: 'string'
+      contains:
+        type: 'string'
+rows:
+  type: 'dict'
+  required: true
+  schema:
+    name:
+      type: 'string'
+      required: true
+    fields:
+      type: 'list'
+      schema:
+        type: 'dict'
+        schema:
+          name:
+            type: 'string'
+          type:
+            type: 'string'
+          contains:
+            type: 'string'
+columns:
+  type: 'dict'
+  required: true
+  schema:
+    name:
+      type: 'string'
+      required: true
+    fields:
+      type: 'list'
+      schema:
+        type: 'dict'
+        schema:
+          name:
+            type: 'string'
+          type:
+            type: 'string'
+          description:
+            type: 'string'
+          contains:
+            type: 'string'
+provenance:
+  type: 'list'
+  schema:
+    type: 'dict'
+    schema:
+      action:
+        type: 'string'
+        allowed:
+          - 'annotation'
+          - 'counts_per_million'
+          - 'datapackager'
+          - 'relative_log'
+          - 'log2_ratio'
+          - 'log_transformed'
+          - 'read_alignment'
+          - 'scaled'
+          - 'filtered'
+          - 'clipped'
+          - 'max_score'
+          - 'indel_normalization'
+          - 'somatic_snv_and_indel_detection'
+      annotations:
+        type: 'list'
+        schema:
+          type: 'dict'
+          schema:
+            name:
+              type: 'string'
+            version:
+              type: 'string'
+      date:
+        type: 'string'
+      description:
+        type: 'string'
+      doc:
+        type: 'string'
+      parents:
+        type: 'list'
+        schema:
+          type: 'string'
+      recipe:
+        type: 'string'
+      software:
+        type: 'list'
+        schema:
+          type: 'dict'
+          schema:
+            name:
+              type: 'string'
+            version:
+              type: 'string'
+      source:
+        type: 'string'
+      time:
+        type: 'string'
+      url:
+        type: 'string'
+      version:
+        type: 'string'

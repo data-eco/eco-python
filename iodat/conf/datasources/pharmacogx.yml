@@ -1,0 +1,13 @@
+name: 'pharmacogx'
+title: 'PharmacoGx'
+url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+experiments:
+  ccle:
+    title: 'Cancer Cell Line Encyclopedia (CCLE)'
+  gcsi:
+    title: 'The Genentech Cell Line Screening Initiative (gCSI)'
+    doi:
+      - "https://doi.org/10.1038/nbt.3080"
+      - "https://doi.org/10.1038/nature17987"
+  gdsc:
+    title: 'Genomics of Drug Sensitivity in Cancer (GDSC)'

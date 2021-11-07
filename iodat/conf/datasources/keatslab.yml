@@ -1,0 +1,7 @@
+name: 'keatslab'
+title: 'Keats Lab'
+url: 'https://www.keatslab.org/myeloma-cell-lines'
+experiments:
+  hmcl:
+    title: "Human Myeloma Cell Lines (HMCL)"
+    url: 'https://www.keatslab.org/myeloma-cell-lines'

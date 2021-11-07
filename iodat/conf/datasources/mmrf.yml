@@ -1,0 +1,7 @@
+name: 'mmrf'
+title: 'The Multiple Myeloma Research Foundation (MMRF)'
+url: 'https://research.themmrf.org' 
+experiments:
+  commpass:
+    title: 'MMRF CoMMpass Trial'
+    url: 'https://research.themmrf.org/rp/download' 

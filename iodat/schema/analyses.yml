@@ -1,0 +1,10 @@
+analyses:
+  type: 'dict'
+  required: true
+  keysrules:
+    type: 'string'
+    regex: '[a-z0-9_\-]+'
+    schema:
+      title:
+        type: 'string'
+        required: true

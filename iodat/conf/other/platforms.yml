@@ -1,0 +1,61 @@
+platforms:
+  affymetrix_hgu133a:
+    title: 'Affymetrix HG-U133A'
+    assays:
+      - 'microarray'
+  affymetrix_snp6:
+    title: 'Affymetrix SNP 6.0'
+    assays:
+      - 'gene_copy_number_variation'
+  affymetrix_u133plus2:
+    title: 'Affymetrix U133 plus 2.0'
+    assays:
+      - 'microarray'
+  agilent_400k_cgh:
+    title: 'Agilent 400k CGH array'
+    assays:
+      - 'gene_copy_number_variation'
+  agilent_sureselect_v4utr:
+    title: 'Agilent SureSelect V4+UTR'
+    assays:
+      - 'snp_genotyping'
+  celltiter_glo:
+    title: "CellTiter Glo"
+    assays:
+      - "cell_growth_inhibition"
+  illumina_25m_snp:
+    title: 'Illumina 2.5M SNP'
+    assays:
+      - 'gene_copy_number_variation'
+  illumina_hiseq2000:
+    title: 'Illumina HiSeq 2000'
+    assays:
+      - 'rnaseq'
+  illumina_hiseq4000:
+    title: 'Illumina HiSeq 4000'
+    assays:
+      - 'rnaseq'
+  whole_exome_sequencing_generic:
+    title: 'Unknown WES Platform'
+    assays:
+      - 'whole_exome_sequencing'
+  whole_exome_sequencing_mixed:
+    title: 'Multiple WES Platforms'
+    assays:
+      - 'whole_exome_sequencing'
+  rnaseq_generic:
+    title: 'Unknown RNA-Seq Platform'
+    assays:
+      - 'rnaseq'
+  sanger_mut:
+    title: 'Sanger SNP genotyping'
+    assays:
+      - 'snp_genotyping'
+  syto60:
+    title: 'SYTO 60 Red Fluorescent Nucleic Acid Stain'
+    assays:
+      - 'cell_growth_inhibition'
+  unknown_rnaseq:
+    title: 'Unknown RNA-Seq Platform'
+    assays:
+      - 'rnaseq'

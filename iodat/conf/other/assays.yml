@@ -1,0 +1,22 @@
+assays:
+  whole_exome_sequencing:
+    title: "Whole Exome Sequencing (WES)"
+    type: "exome_sequencing"
+  rnaseq:
+    title: "RNA-seq gene expression profiling assay"
+    type: "gene_expression"
+  fluorescence_imaging_cell_growth_inhibition:
+    title: 'Fluorescence imaging cell growth inhibition assay'
+    type: 'cell_growth_inhibition'
+  gene_copy_number_variation:
+    title: "Gene copy number variation"
+    type: "copy_number_variation"
+  gene_expression:
+    title: "Gene expression"
+    type: "gene_expression"
+  microarray:
+    title: "Microarray gene expression profiling assay"
+    type: "gene_expression"
+  snp_genotyping:
+    title: 'Single nucleotide polymorphism genotyping'
+    type: "gene_mutation"

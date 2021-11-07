@@ -1,0 +1,10 @@
+name: 'mocklab'
+title: 'Mock Lab'
+experiments:
+  chen2021:
+    title: 'SCLC BETi/mTORi Drug Combo (Chen2021)'
+  mm25:
+    title: 'MM25'
+  mtorc3-nguyen2021:
+    title: 'mTORC3 RNA-Seq Analysis (Nguyen et al., 2021)'
+private: true

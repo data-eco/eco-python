@@ -1,0 +1,9 @@
+python>=3.9
+pyarrow>=5.0
+cerberus
+frictionless
+pandas
+numpy
+pyyaml
+sphinx
+snakemake-minimal

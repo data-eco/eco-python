@@ -1,0 +1,9 @@
+analyses:
+  differential_expression:
+    title: 'Differential Expression Analysis'
+  gene_association:
+    title: 'Gene Association'
+  pathway_association:
+    title: 'Pathway Association'
+  co-occurrence:
+    title: 'Co-occurrence'

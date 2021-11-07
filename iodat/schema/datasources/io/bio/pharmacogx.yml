@@ -1,0 +1,293 @@
+#
+# datasource config
+#
+name: 'pharmacogx'
+datasets:
+  - name: 'rna'
+    title: "CCLE Gene Expression Data"
+    datasource: 'pharmacogx'
+    experiment: 'ccle'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/ccle2015/features/rna.feather'
+    datatype: 'experimental_dataset'
+    assay: 'microarray'
+    measurement: 'Gene Expression'
+    platform: 'affymetrix_u133plus2'
+    reference: 'GRCh38'
+    rows:
+      name: 'ensgene'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/features/rna_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'cnv'
+    title: "CCLE CNV Data"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'ccle'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/ccle2015/features/cnv.feather'
+    assay: 'gene_copy_number_variation'
+    platform: 'affymetrix_snp6'
+    reference: 'GRCh38'
+    rows:
+      name: 'symbol'
+    columns: 
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/features/cnv_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "CCLE Drug Response (AAC Recomputed)"
+    datatype: 'experimental_dataset'
+    measurement: 'AAC'
+    datasource: 'pharmacogx'
+    experiment: 'ccle'
+    processing: 'aac'
+    platform: "celltiter_glo"
+    path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/aac_recomputed.feather'
+    assay: "fluorescence_imaging_cell_growth_inhibition"
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/aac_recomputed_row_mdata.feather'
+    columns: 
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/aac_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "CCLE Drug Response (IC-50 Recomputed)"
+    datatype: 'experimental_dataset'
+    measurement: 'IC50'
+    datasource: 'pharmacogx'
+    experiment: 'ccle'
+    processing: 'ic50'
+    platform: "celltiter_glo"
+    path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/ic50_recomputed.feather'
+    assay: "fluorescence_imaging_cell_growth_inhibition"
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/ic50_recomputed_row_mdata.feather'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/ccle2015/phenotypes/ic50_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'rna'
+    title: "GDSC Gene Expression Data"
+    doi:
+      - "https://doi.org/10.1038/nature11005"
+      - "https://doi.org/10.1093/nar/gks1111"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'gdsc'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/gdsc2020/features/rna.feather'
+    assay: 'microarray'
+    platform: "affymetrix_hgu133a"
+    measurement: 'Gene Expression'
+    rows:
+      name: 'ensgene'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/features/rna_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'mut'
+    title: "GDSC Mutation Data"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'gdsc'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/gdsc2020/features/mut.feather'
+    assay: 'snp_genotyping'
+    measurement: 'SNP'
+    platform: "sanger_mut"
+    rows:
+      name: 'symbol'
+    columns: 
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/features/mut_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'cnv'
+    title: "GDSC CNV Data"
+    datasource: 'pharmacogx'
+    experiment: 'gdsc'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/gdsc2020/features/cnv.feather'
+    datatype: 'experimental_dataset'
+    assay: 'gene_copy_number_variation'
+    platform: "affymetrix_snp6"
+    rows:
+      name: 'symbol'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/features/cnv_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "GDSC Drug Response (AAC)"
+    measurement: 'AAC'
+    assay: 'fluorescence_imaging_cell_growth_inhibition'
+    platform: "syto60"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'gdsc'
+    processing: 'aac'
+    path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/aac_recomputed.feather'
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/aac_recomputed_row_mdata.feather'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/aac_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "GDSC Drug Response (IC-50)"
+    datatype: 'experimental_dataset'
+    measurement: 'IC50'
+    platform: "syto60"
+    datasource: 'pharmacogx'
+    experiment: 'gdsc'
+    processing: 'ic50'
+    path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/ic50_recomputed.feather'
+    assay: "fluorescence_imaging_cell_growth_inhibition"
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/ic50_recomputed_row_mdata.feather'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gdsc2020/phenotypes/ic50_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'rna'
+    title: 'gCSI RNA-Seq'
+    doi:
+      - "https://doi.org/10.1038/nbt.3080"
+      - "https://doi.org/10.1038/nature17987"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'gcsi'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/gcsi2017/features/rna.feather'
+    assay: 'rnaseq'
+    measurement: 'Gene Expression'
+    platform: "unknown_rnaseq"
+    rows:
+      name: 'ensgene'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/features/rna_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  # - name: 'mut'
+  #   title: 'gCSI Mutation Data'
+  #   datatype: 'experimental_dataset'
+    # datasource: 'pharmacogx'
+    # experiment: 'gcsi'
+  #   path: '/data/clean/pharmacogx/2.0/gcsi2017/features/mut.feather'
+  #   assay: 'snp_genotyping'
+  #   platform: 'Illumina HumanOmni2.5_4v1'
+  #   measurement: 'SNP'
+  #   reference: 'GRCh38'
+  #   rows: 'symbol'
+  #   columns: 'cell_line'
+  #   metadata:
+  #     columns:
+  #       path: '/data/clean/pharmacogx/2.0/gcsi2017/features/mut_col_mdata.feather'
+  - name: 'cnv'
+    title: 'gCSI CNV Data'
+    datasource: 'pharmacogx'
+    experiment: 'gcsi'
+    processing: 'raw'
+    path: '/data/clean/pharmacogx/2.0/gcsi2017/features/cnv.feather'
+    datatype: 'experimental_dataset'
+    assay: 'gene_copy_number_variation'
+    platform: "illumina_25m_snp"
+    measurement: 'CNV'
+    reference: 'GRCh37'
+    rows:
+      name: 'symbol'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/features/cnv_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "gCSI Drug Response (AAC)"
+    datatype: 'experimental_dataset'
+    measurement: 'AAC'
+    platform: "celltiter_glo"
+    datasource: 'pharmacogx'
+    experiment: 'gcsi'
+    processing: 'aac'
+    path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/aac_recomputed.feather'
+    assay: "fluorescence_imaging_cell_growth_inhibition"
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/aac_recomputed_row_mdata.feather'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/aac_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
+  - name: 'drug-response'
+    title: "gCSI Drug Response (IC-50)"
+    measurement: 'IC50'
+    platform: "celltiter_glo"
+    datatype: 'experimental_dataset'
+    datasource: 'pharmacogx'
+    experiment: 'gcsi'
+    processing: 'ic50'
+    path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/ic50_recomputed.feather'
+    assay: 'fluorescence_imaging_cell_growth_inhibition'
+    rows:
+      name: 'drug'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/ic50_recomputed_row_mdata.feather'
+    columns:
+      name: 'cell_line'
+      path: '/data/clean/pharmacogx/2.0/gcsi2017/phenotypes/ic50_recomputed_col_mdata.feather'
+    provenance:
+      - source: 'PharmacoGx'
+        url: 'https://pharmacodb.pmgenomics.ca/pharmacogx'
+      - recipe: "https://github.com/khughitt/pharmacogx-data-retrieval"
+        version: '2.0'
