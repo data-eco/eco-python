@@ -5,6 +5,9 @@ assays:
   rnaseq:
     title: "RNA-seq gene expression profiling assay"
     type: "gene_expression"
+  single_cell_rnaseq:
+    title: "Single-cell RNA-seq gene expression profiling assay"
+    type: "gene_expression"
   fluorescence_imaging_cell_growth_inhibition:
     title: 'Fluorescence imaging cell growth inhibition assay'
     type: 'cell_growth_inhibition'
