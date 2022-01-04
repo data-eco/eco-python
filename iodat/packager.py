@@ -1,21 +1,20 @@
 """
-Packager class definition
+Io Packager class definition
 """
 import datetime
 import frictionless
-import glob
 import os
-import shortuuid
+import sys
+import uuid
 import yaml
-import numpy as np
-import pandas as pd
 from iodat.summary import compute_summary
+from iodat.version import __version__
 from cerberus import Validator
+from typing import Any, Dict
 from pkg_resources import resource_filename
 
-
 class Packager:
-    def __init__(self, recipe):
+    def __init__(self, recipe: str):
         """
         Creates a new Packager instance
 
@@ -27,9 +26,6 @@ class Packager:
         self._conf_dir = os.path.abspath(resource_filename(__name__, "conf"))
         self._schema_dir = os.path.abspath(resource_filename(__name__, "schema"))
 
-        # load system config
-        self._config = self._load_io_config()
-
         # load & validate recipe
         self.recipe = self._load_recipe(recipe)
 
@@ -38,13 +34,13 @@ class Packager:
         self.assays = self._load_config("assays")
         self.platforms = self._load_config("platforms")
 
-    def _load_recipe(self, path):
+    def _load_recipe(self, path: str) -> Dict[str, Any]:
         """Validates io recipe"""
         # load recipe
         with open(path) as fp:
             recipe = yaml.load(fp, Loader=yaml.FullLoader)
 
-        # load schema
+        # load schema & validate
         with open(os.path.join(self._schema_dir, "recipe.yml")) as schema_fp:
             schema = yaml.load(schema_fp, Loader=yaml.FullLoader)
 
@@ -57,30 +53,8 @@ class Packager:
 
         return recipe
 
-    def _load_io_config(self):
-        """
-        Loads Io base configuration.
-
-        Used to determine base package output directory, and contributors info.
-        """
-        infile = os.path.join(os.getenv("XDG_CONFIG_HOME"), "io", "config.yml")
-
-        if not os.path.exists(infile):
-            print(f"[Error] cannot find config file at {infile}!")
-            sys.exit(1)
-
-        with open(infile) as fp:
-            return yaml.load(fp, Loader=yaml.FullLoader)
-
-    def get_output_dir(self):
-        """Returns path to the base system-wide datapackage output dir"""
-        return os.path.join(
-            self._config["output_dir"], self._config["version"], self.recipe["id"]
-        )
-
-    def _load_config(self, target):
-        """Loads a yaml configuration file specifying a component in the Io data
-        model."""
+    def _load_config(self, target: str) -> Dict[str, Any]:
+        """Loads a yaml configuration file specifying a component in the Io data model."""
         infile = os.path.join(self._conf_dir, "other", target + ".yml")
 
         with open(infile) as fp:
@@ -98,11 +72,10 @@ class Packager:
 
                 return cfg[target]
 
-    def build_package(self):
+    def build_package(self, pkg_dir, include_summary=False):
         """Creates a datapackage.yml file for a given dataset"""
         # cd to the directory containing the package data;
         # at present, it's not possible to parse files outside of direct/child directories
-        pkg_dir = self.get_output_dir()
         os.chdir(pkg_dir)
 
         # create a new DataPackage instance and set relevant fields
@@ -132,8 +105,8 @@ class Packager:
                 "processing": self.recipe["processing"],
             },
             "datatype": self.recipe["datatype"],
-            "contributors": self._config["metadata"]["contributors"],
-            "uuid": shortuuid.ShortUUID().random(length=8),
+            "contributors": self.recipe["contributors"],
+            "uuid": str(uuid.uuid4()),
             "rows": self.recipe["rows"]["name"],
             "columns": self.recipe["columns"]["name"],
             "provenance": self.recipe["provenance"],
@@ -187,7 +160,7 @@ class Packager:
         prov = {
             "time": now.strftime("%Y-%m-%d %H:%M:%S"),
             "action": "io-datapackager",
-            "version": self._config["version"],
+            "version": __version__
         }
         mdata["provenance"].append(prov)
 
@@ -195,10 +168,11 @@ class Packager:
         pkg["io"] = mdata
 
         # add summary statistics
-        try:
-            data_path = os.path.join(pkg_dir, "data.tsv")
-            pkg["summary"] = compute_summary(data_path)
-        except:
-            raise RuntimeError("Error computing dataset summary")
+        if include_summary:
+            try:
+                data_path = os.path.join(pkg_dir, "data.tsv")
+                pkg["summary"] = compute_summary(data_path)
+            except:
+                raise RuntimeError("Error computing dataset summary")
 
         return pkg
