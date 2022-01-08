@@ -1,0 +1,33 @@
+assay:
+  type: 'string'
+analysis:
+  type: 'string'
+datatype:
+  type: 'string'
+  required: true
+  allowed:
+    - 'analysis_result'
+    - 'experimental_dataset'
+    - 'generic_dataset'
+disease:
+  type: 'list'
+  schema:
+    type: 'string'
+doi:
+  type: 'list'
+platform:
+  type: 'string'
+measurement:
+  type: 'string'
+reference:
+  type: 'string'
+sample_type:
+  type: 'list'
+  schema:
+    type: 'string'
+species:
+  type: 'list'
+  schema:
+    type: 'integer'
+url:
+  type: 'string'

@@ -1,6 +1,6 @@
 data:
   type: 'dict'
-  required: true
+  required: false
   schema:
     dataset:
       type: 'dict'
@@ -30,48 +30,17 @@ data:
     version:
       type: 'string'
       required: true
-biodat:
-  type: dict
-  schema:
-    assay:
-      type: 'string'
-    analysis:
-      type: 'string'
-    datatype:
-      type: 'string'
-      required: true
-      allowed:
-        - 'experimental_dataset'
-        - 'analysis_result'
-        - 'generic_dataset'
-    disease:
-      type: 'list'
-      schema:
-        type: 'string'
-    platform:
-      type: 'string'
-    measurement:
-      type: 'string'
-    reference:
-      type: 'string'
-    sample_type:
-      type: 'list'
-      schema:
-        type: 'string'
-    species:
-      type: 'list'
-      schema:
-        type: 'integer'
-    url:
-      type: 'string'
-    doi:
-      type: 'list'
 rows:
   type: 'string'
-  required: true
+  required: false
 columns:
   type: 'string'
-  required: true
+  required: false
+profile:
+  type: 'string'
+  allowed:
+    - "general"
+    - "biodat"
 styles:
   type: 'dict'
   schema:

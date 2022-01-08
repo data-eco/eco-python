@@ -5,7 +5,6 @@ KH (Oct 2, 2020)
 import numpy as np
 import pandas as pd
 
-
 def load_tbl(infile):
     """Loads a tabular data file from disk"""
     if infile.endswith(".csv") or infile.endswith(".csv.gz"):
@@ -19,7 +18,6 @@ def load_tbl(infile):
     elif infile.endswith(".feather"):
         dat = pd.read_feather(infile)
     else:
-        print("Unrecognized file format!")
-        print(infile)
+        raise Exception(f"Unrecognized file format for {infile}!")
 
     return dat

@@ -1,8 +1,0 @@
-name: 'pubtator'
-title: 'PubTator Central'
-url: 'https://www.ncbi.nlm.nih.gov/research/pubtator/'
-experiments:
-  pubtator:
-    title: 'PubTator Central'
-    doi:
-      - "https://doi.org/10.1093/nar/gkz389"
