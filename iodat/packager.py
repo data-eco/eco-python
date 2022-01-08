@@ -3,6 +3,7 @@ Io Packager class definition
 """
 import datetime
 import frictionless
+import json
 import os
 import pathlib
 import sys
@@ -12,7 +13,7 @@ from iodat.summary import compute_summary
 from iodat.version import __version__
 from iodat.util import load_tbl
 from cerberus import Validator
-from typing import Any, Dict
+from typing import Any, Dict, List
 from pkg_resources import resource_filename
 
 class Packager:
@@ -68,46 +69,42 @@ class Packager:
 
         return recipe
 
-    #  def build_package(self, recipe, pkg_dir, include_summary=False):
-    def build_package(self, recipe: str | pathlib.Path | Dict[str, Any], resources, pkg_dir="./", include_summary=False):
+    def build_package(self, recipe: str | pathlib.Path | Dict[str, Any], resources, pkg_dir="./", 
+                      annotations=List[str | pathlib.Path], 
+                      views=List[str | pathlib.Path | Dict[str, Any]], 
+                      include_summary=False):
         """Creates a datapackage.yml file for a given dataset"""
         # load & validate recipe
         self.recipe = self._load_recipe(recipe)
 
-        # cd to the directory containing the package data;
-        # at present, it's not possible to parse files outside of direct/child directories
-        #os.chdir(pkg_dir)
-
         pkg_dir = os.path.realpath(os.path.expanduser(os.path.expandvars(pkg_dir)))
 
-        # create a new DataPackage instance and set relevant fields
-        # TEMP Jan 5, 2022: until i can figure out how to instantiate Packages/Resources
-        # from dataframes directly, temporarily just write them to disk and read it back
-        # in...
-        #pkg = frictionless.describe_package("*.tsv", basepath=pkg_dir)
+
+        # for now, resources are first written out, and then "describe_package()" is
+        # used to infer the appropriate datapackage metadata;
+        #pkg = frictionless.Package()
+
         for resource_name in resources:
             outfile = os.path.join(pkg_dir, resource_name + ".csv")
-            resources[resource_name].to_csv(outfile)
+            resources[resource_name].to_csv(outfile, index=False)
+            # resource = frictionless.describe(resources[resource_name])
+            # resource.write(outfile)
+            # res = pkg.add_resource(resource)
+
         pkg = frictionless.describe_package("*.csv", basepath=pkg_dir)
 
-        # add num rows/cols to resource descriptions
         for i, resource in enumerate(pkg["resources"]):
-            #fname = os.path.basename(resource["path"])
+            dims = resources[resource['name']].shape
 
-            # add data dimensions
-            # TODO: make optional and/or handle along-side of compute_stats to avoid
-            # having to read files multiple times..
-            #dat = load_tbl(fname)
-
-            pkg["resources"][i]["num_rows"] = resources[resource['name']].shape[0]
-            pkg["resources"][i]["num_columns"] = resources[resource['name']].shape[1]
+            pkg["resources"][i]["num_rows"] = dims[0]
+            pkg["resources"][i]["num_columns"] = dims[1]
 
         now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
 
         mdata = self.recipe
 
         pkg_uuid = str(uuid.uuid4())
-        mdata['data']['uuid'] = pkg_uuid 
+        mdata['uuid'] = pkg_uuid 
 
         mdata['provenance'] = {
             "nodes": {
@@ -123,6 +120,21 @@ class Packager:
             "version": self._version
         }
 
+        # add annotations, if present
+        annots = [ ] 
+
+        for annot in annotations:
+            annots.append(self.parse_annotation(annot))
+
+        mdata['provenance']['nodes'][pkg_uuid]["annotations"] = annots
+
+        views = [ ] 
+
+        for view in views:
+            annots.append(self.parse_view(view))
+
+        mdata['provenance']['nodes'][pkg_uuid]["views"] = views
+
         # add io metadata
         pkg["io"] = mdata
 
@@ -135,4 +147,33 @@ class Packager:
         #      except:
         #          raise RuntimeError("Error computing dataset summary")
 
+        # write metadata to disk
+        with open(os.path.join(pkg_dir, "datapackage.json"), "w") as fp:
+            # pretty print for now; can make optional later..
+            json.dump(pkg, fp, indent=2, sort_keys=True)
+
         return pkg
+
+    def parse_annotation(self, annot: str | pathlib.Path):
+        """Parses a single annotation"""
+        if os.path.exists(annot):
+            with open(annot) as fp:
+                contents = fp.read()
+        elif isinstance(annot, str):
+            contents = annot
+        else:
+            raise Exception("Invalid annotation path specified! {annot}")
+
+        return contents
+
+    def parse_view(self, view: str | pathlib.Path | Dict[str, Any]):
+        """Parses a single view"""
+        if isinstance(view, (str, pathlib.Path,)) and os.path.exists(view):
+            with open(view) as fp:
+                contents = json.load(fp)
+        else:
+            contents = view
+
+        return contents
+
+# TODO: validate existing metadata, when updating dag...
