@@ -1,0 +1,93 @@
+"""
+Snakemake x Io (DataDAG) example pipeline
+"""
+import os
+import glob
+import pandas as pd
+import seaborn as sns
+
+from iodat.packager import Packager
+
+# rule all:
+#     input:
+#         "results/exclude_missing/penguins.csv",
+#         "results/exclude_missing/datapackage.json"
+rule all:
+    input:
+        "results/raw/penguins.csv",
+        "results/raw/datapackage.json"
+
+rule fetch_data:
+    output:
+        "results/raw/penguins.csv",
+        "results/raw/datapackage.json"
+    run:
+        dat = sns.load_dataset('penguins')
+
+        # create io packager instance and load recipe
+        pkgr = Packager()
+
+        # metadata
+        recipe = {
+            "provenance": {
+                "source": "Gorman et al. (2014)",
+                "date": "2022-01-07",
+                "urls": ["https://allisonhorst.github.io/palmerpenguins/"],
+                "description": "Data for penguins of 3 different species (Adelie, Chinstrap, and Gentoo) collected in the Palmer Archipelago, Antarctica.",
+                "citations": ["10.1371/journal.pone.0090081"]
+            },
+            "contributors": [{
+                "title": "Gunter",
+                "role": "maintainer"
+            }]
+        }
+
+        # data
+        resources = {
+            "penguins": dat,
+        }
+
+        # annotations
+        annot = ["annot/fetch_data/overview.md"]
+
+        # views
+        views = ["views/fetch_data/scatterplot.json"]
+
+        # generate data package and write to disk
+        out_dir = os.path.dirname(output[0])
+
+        pkg = pkgr.build_package(recipe, resources, out_dir, annotations=annot, views=views)
+
+# Drops missing values from dataset
+rule exclude_missing:
+    input:
+        "results/raw/penguins.csv",
+        "results/raw/datapackage.json"
+    output:
+        "results/exclude_missing/penguins.csv",
+        "results/exclude_missing/datapackage.json"
+    run:
+        # load raw data
+        dat = pd.read_csv(input[0])
+
+        # drop missing values and save to csv
+        dat.dropna().to_csv(output[0])
+
+        # create a new DataPackage instance and set relevant fields
+        pkg = frictionless.describe_package(output[0])
+
+        # generate initial provenance dag
+        dag = DAG.from_datapackage(input[1])
+
+        mdata = {
+        "action": "exclude_missing",
+        "description": "Dropping entries with missing values"
+        }
+
+        dag.add_node("exclude_missing", mdata, ["fetch_data"])
+
+        prov = dag.to_json()
+
+        pkg["provenance"] = prov
+        pkg.to_json(output[1])
+
