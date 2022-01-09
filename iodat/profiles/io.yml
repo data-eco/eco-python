@@ -39,7 +39,7 @@ columns:
 profile:
   type: 'string'
   allowed:
-    - "general"
+    - "io"
     - "biodat"
 styles:
   type: 'dict'

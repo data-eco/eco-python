@@ -49,3 +49,15 @@ Limitations
 1. Currently focused on supporting tabular data packages
   - long-term, if useful, would like to extend to other forms of data
 
+TODO
+----
+
+- [ ] extend support to alt file formats
+  - [ ] tsv
+  - [ ] feather/arrow
+- [ ] allow json to be passed in for metadata
+- [ ] describe motivation & use of profiles
+- [ ] allow arbitrary schemas to be provided & used for validation?
+  - [ ] modify "profile" to accept a path/url/dict?
+
+
