@@ -13,7 +13,7 @@ from iodat.summary import compute_summary
 from iodat import __version__
 from iodat.util import load_tbl
 from cerberus import Validator
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from pkg_resources import resource_filename
 
 class Packager:
@@ -24,14 +24,15 @@ class Packager:
         self._schema_dir = os.path.abspath(resource_filename(__name__, "profiles"))
         self._version = __version__
 
-    def build_package(self, resources, 
-                      annotations=List[str | pathlib.Path], 
-                      views=List[str | pathlib.Path | Dict[str, Any]], 
-                      metadata=str | pathlib.Path | Dict[str, Any], 
+    def build_package(self, resources: Dict[str, Any],
+                      annotations: Optional[List[str | pathlib.Path]] = [],
+                      views: Optional[List[str | pathlib.Path | Dict[str, Any]]] = [],
+                      metadata: Optional[str | pathlib.Path | Dict[str, Any]] = {},
                       profile="",
-                      pkg_dir="./", 
+                      pkg_dir="./",
                       include_summary=False,
-                      pretty_print=True):
+                      pretty_print=True,
+                      **kwargs):
         """
         Builds an Io datapackage.
 
@@ -52,13 +53,15 @@ class Packager:
         include_summary: bool
             [Optional] Whether or not to compute & embed summary statistics at the time of package
             creation (default: False)
+        **kwargs: dict
+            [Optional] Additional global/DAG-level metadata to be included
         """
-        # parse user-provided metadata
-        general_mdata = self._parse_metadata(metadata)
+        # parse user-provided processing stage (node-level) metadata
+        node_custom_mdata = self._parse_metadata(metadata)
 
         # if a metadata profile was specified, validate metadata against its schema
         if profile != "":
-            self._validate_metadata(general_mdata, profile)
+            self._validate_metadata(node_custom_mdata, profile)
 
         # determine location to build packages
         pkg_dir = os.path.realpath(os.path.expanduser(os.path.expandvars(pkg_dir)))
@@ -85,33 +88,26 @@ class Packager:
         # generate a UUID to use for the dataset at this stage in processing
         node_uuid = str(uuid.uuid4())
 
-        now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-
-        node_mdata = {
-            "name": "io-python",
-            "action": "build_package",
-            "time":  now,
-            "version": self._version,
-            "annot": [],
-            "views": []
-        }
-
-        # add annotations and views, if present
-        for annot in annotations:
-            node_mdata["annot"].append(self.parse_annotation(annot))
-
-        for view in views:
-            node_mdata["views"].append(self.parse_view(view))
+        # create node metadata block
+        node_mdata = self.create_node(annotations, views)
+        node_mdata['metadata'] = node_custom_mdata
 
         # add io-dag section to data package metadata
         pkg["io-dag"] = {
-            "metadata": general_mdata,
             "uuid": node_uuid,
-            "nodes": { 
+            "nodes": {
                 node_uuid: node_mdata
             },
-            "edges": {}
+            "edges": []
         }
+
+        reserved_keys = pkg["io-dag"].keys()
+
+        for key in kwargs:
+            if key in reserved_keys:
+                raise Exception(f"Attempting to use reserved metadata field: {key}")
+
+            pkg["io-dag"][key] = kwargs[key]
 
         # add num rows/columns to metadata;
         # this may eventually be moved to the optional "compute_summary" section
@@ -137,6 +133,126 @@ class Packager:
             else:
                 json.dump(pkg, fp)
 
+    def update_package(self, existing: str | pathlib.Path, 
+                       resources: Dict[str, Any],
+                       annotations: Optional[List[str | pathlib.Path]] = [],
+                       views: Optional[List[str | pathlib.Path | Dict[str, Any]]] = [],
+                       metadata: Optional[str | pathlib.Path | Dict[str, Any]] = {},
+                       profile="",
+                       pkg_dir="./",
+                       include_summary=False,
+                       pretty_print=True,
+                       **kwargs):
+        """
+        Updates an existing Io datapackage.
+
+        Parameters
+        ----------
+        existing: str|path
+            Path to existing datapackage.json to be extended
+        resources: dict
+            Dictionary of names resources to include in the data package
+        annotations: list
+            List of filepaths to annotation files, or string annotations
+        views: list
+            List of filepaths to vega-lite views, or dict representations of such views
+        metadata: str|path|dict
+            [Optional] Additional metadata to include, either as a dict, or path to a yml/json file
+        profile: str
+            [Optional] Name of metadata profile to use for validation, or "", for none
+        pkg_dir: str|path
+            [Optional] Location where data package should be saved (default: "./")
+        include_summary: bool
+            [Optional] Whether or not to compute & embed summary statistics at the time of package
+            creation (default: False)
+        **kwargs: dict
+            [Optional] Additional global/DAG-level metadata to be included
+        """
+        # determine location to build packages
+        pkg_dir = os.path.realpath(os.path.expanduser(os.path.expandvars(pkg_dir)))
+
+        # parse user-provided processing stage (node-level) metadata
+        node_custom_mdata = self._parse_metadata(metadata)
+
+        # if a metadata profile was specified, validate metadata against its schema
+        if profile != "":
+            self._validate_metadata(node_custom_mdata, profile)
+
+        # write resources to output dir
+        # for now, resources are first written out, and then "describe_package()" is
+        # used to infer the appropriate datapackage metadata;
+        for resource_name in resources:
+            outfile = os.path.join(pkg_dir, resource_name + ".csv")
+            resources[resource_name].to_csv(outfile, index=False)
+
+        # scan package dir to construct initial datapackage
+        pkg = frictionless.describe_package("*.csv", basepath=pkg_dir)
+
+        node_mdata = self.create_node(annotations, views, action='update_package')
+        node_mdata['metadata'] = node_custom_mdata
+
+        # extract io metadata + dag from existing data package
+        if not os.path.exists(existing):
+            raise Exception("Invalid path to existing data package provided: {existing}")
+
+        with open(existing) as fp:
+            existing_mdata = json.load(fp)
+
+        # generate a UUID to use for the dataset at this stage in processing
+        node_uuid = str(uuid.uuid4())
+
+        # copy over metadata section from previous stage
+        pkg["io-dag"] = existing_mdata["io-dag"]
+
+        # store uuid of previous step, and update
+        prev_uuid = pkg["io-dag"]["uuid"]
+        pkg["io-dag"]["uuid"] = node_uuid
+
+        # update provenance DAG
+        pkg["io-dag"]["nodes"][node_uuid] = node_mdata
+        pkg["io-dag"]["edges"].append({
+            "source": prev_uuid,
+            "target": node_uuid
+        })
+
+        # write metadata to disk
+        with open(os.path.join(pkg_dir, "datapackage.json"), "w") as fp:
+            if pretty_print:
+                json.dump(pkg, fp, indent=2, sort_keys=True)
+            else:
+                json.dump(pkg, fp)
+
+    def create_node(self, annotations: List[str], views: List[Dict[str, Any]], action='build_package'):
+        """
+        Generates metadata block for a new node in the DAG
+
+        Parameters
+        ---------
+        annotations: list
+            List of filepaths to annotation files, or string annotations
+        views: list
+            List of filepaths to vega-lite views, or dict representations of such views
+        """
+        now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+
+        node_mdata = {
+            "name": "io-python",
+            "action": action,
+            "time":  now,
+            "version": self._version,
+            "annot": [],
+            "views": []
+        }
+
+        # add annotations and views, if present
+        for annot in annotations:
+            node_mdata["annot"].append(self.parse_annotation(annot))
+
+        for view in views:
+            node_mdata["views"].append(self.parse_view(view))
+
+        return node_mdata
+
     def _parse_metadata(self, mdata: str | pathlib.Path | Dict[str, Any]) -> Dict[str, Any]:
         """
         Parses metadata and validates it against a specific profile, if specified
@@ -159,7 +275,7 @@ class Packager:
             with open(mdata) as fp:
                 mdata = yaml.load(fp, Loader=yaml.FullLoader)
 
-        assert isinstance(mdata, dict) 
+        assert isinstance(mdata, dict)
 
         return mdata
 
@@ -181,11 +297,11 @@ class Packager:
         profile: str
             Name of the profile to use for validation
         """
-        # load base "io" profile 
+        # load base "io" profile
         with open(os.path.join(self._schema_dir, "io.yml")) as schema_fp:
             schema = yaml.load(schema_fp, Loader=yaml.FullLoader)
 
-        # if an alternate profile is specified, extend base io schema with the 
+        # if an alternate profile is specified, extend base io schema with the
         # supported fields associated with that profile
         if "profile" != "io":
             if profile not in schema['profile']['allowed']:

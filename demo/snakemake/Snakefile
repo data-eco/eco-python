@@ -8,14 +8,10 @@ import seaborn as sns
 
 from iodat.packager import Packager
 
-# rule all:
-#     input:
-#         "results/exclude_missing/penguins.csv",
-#         "results/exclude_missing/datapackage.json"
 rule all:
     input:
-        "results/raw/penguins.csv",
-        "results/raw/datapackage.json"
+        "results/exclude_missing/penguins.csv",
+        "results/exclude_missing/datapackage.json"
 
 rule fetch_data:
     output:
@@ -45,44 +41,40 @@ rule fetch_data:
             "penguins": dat,
         }
 
-        # below, we create lists with any annotations, views, and metadata we wish to
-        # include;
-        # annotations & views are both associated with the _current node_ (specific
-        # stage in data processing) in the Io DAG.
-        # metadata is stored at the "global" level in the metadata, and remains
-        # unchanged in subsequent processing steps, unless specifically requested
-
-        # annotations can be provided as paths to external markdown, etc. plain-text
-        # files, or, as string annotations
+        # annotations can optionally be provided as paths to external markdown, etc.
+        # plain-text files, or, as string annotations
         annot = ["annot/fetch_data/overview.md"]
 
         # views can be provided as paths to external vega-lite json files, or, as dict
         # representations of such a view
         views = ["views/fetch_data/scatterplot.json"]
 
-        # additional metadata to include in datapackage; anything added here will be
-        # included in the metadata for all subsequent versions of the datapackage,
-        # unless explicitly modified or removed
+        # metadata can be specified in two different ways:
+        # 1. the "metadata" function param, used to specific _node-level_ metadata
+        # 2. kwargs, used to specify _workflow-_ or _dag-level_ metadata
 
-        # this is a useful place to describe things like the original source of the
-        # data, prior to ingestion in the pipeline, as well as data package
-        # authors/maintainers.
+        # node-level metadata
         metadata = {
+            "title": "Unprocessed data",
+            "description": "Data downloaded via Seaborn, with no additional processing applied.",
             "source": {
                 "name": "Gorman et al. (2014)",
                 "date": "2022-01-07",
                 "urls": ["https://allisonhorst.github.io/palmerpenguins/"],
                 "description": "Data for penguins of 3 different species (Adelie, Chinstrap, and Gentoo) collected in the Palmer Archipelago, Antarctica.",
                 "citations": ["10.1371/journal.pone.0090081"]
-            },
-            "contributors": [{
-                "title": "Gunter",
-                "role": "maintainer"
-            }]
+            }
+        }
+
+        # dag-level metadata
+        contributors = {
+            "title": "Gunter",
+            "role": "maintainer"
         }
 
         # generate and save io data package
-        pkgr.build_package(resources, annot, views, metadata, pkg_dir=out_dir)
+        pkgr.build_package(resources, annot, views, metadata, name="Raw Data",
+                pkg_dir=out_dir, contributors=contributors)
 
 rule exclude_missing:
     input:
@@ -92,10 +84,15 @@ rule exclude_missing:
         "results/exclude_missing/penguins.csv",
         "results/exclude_missing/datapackage.json"
     run:
-        # load raw data
+        # subsequent stages of data processing look similar to the first, except...
+        #.......
+        # the other change is that we swap the call to "build_package" for
+        # "update_package", and we provide a path to an _existing_ datapackage.json as
+        # as the first argument the the function call
         dat = pd.read_csv(input[0])
 
-        # drop missing values and save to csv
+        # in our toy example, the only change we are making to the data is to remove any
+        # rows which contain missing values
         dat.dropna().to_csv(output[0])
 
         # create io packager instance and load recipe
@@ -106,36 +103,16 @@ rule exclude_missing:
             "penguins": dat,
         }
 
-        # annotations
-        annot = ["annot/fetch_data/overview.md"]
-
-        # views
-        views = ["views/fetch_data/scatterplot.json"]
-
         # generate data package and write to disk
         out_dir = os.path.dirname(output[0])
 
-        pkg = pkgr.build_package(recipe, resources, out_dir, annotations=annot, views=views)
+        # in this case, we don't have anything additional to describe, so not
+        # views/annotations are included in the call to "update_package"
+        existing_pkg = input[1]
 
-
-        # pkg <- pkgr$update_package(snakemake@input[[4]], mdata, "Reprocess data",
-        #                    resources, annotations = annot)
-
-        # create a new DataPackage instance and set relevant fields
-        pkg = frictionless.describe_package(output[0])
-
-        # generate initial provenance dag
-        dag = DAG.from_datapackage(input[1])
-
-        mdata = {
-        "action": "exclude_missing",
-        "description": "Dropping entries with missing values"
+        metadata = {
+            "title": "Filtered data",
+            "description": "Rows with missing values have been excluded."
         }
-        #
-        # dag.add_node("exclude_missing", mdata, ["fetch_data"])
-        #
-        # prov = dag.to_json()
-        #
-        # pkg["provenance"] = prov
-        # pkg.to_json(output[1])
 
+        pkg = pkgr.update_package(existing_pkg, resources, metadata=metadata, pkg_dir=out_dir)
