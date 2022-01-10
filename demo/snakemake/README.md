@@ -1,5 +1,5 @@
-Data-DAG Example Pipeline
-=========================
+Io-DataDAG Example Pipeline
+===========================
 
 **Setup**:
 

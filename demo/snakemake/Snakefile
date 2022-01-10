@@ -84,11 +84,10 @@ rule exclude_missing:
         "results/exclude_missing/penguins.csv",
         "results/exclude_missing/datapackage.json"
     run:
-        # subsequent stages of data processing look similar to the first, except...
-        #.......
-        # the other change is that we swap the call to "build_package" for
-        # "update_package", and we provide a path to an _existing_ datapackage.json as
-        # as the first argument the the function call
+        # subsequent stages of data processing look similar to the first, except we swap
+        # the call to "build_package" for "update_package", and we provide a path 
+        # to the datapackage.json from the previous step as the first argument the the
+        # function call
         dat = pd.read_csv(input[0])
 
         # in our toy example, the only change we are making to the data is to remove any
@@ -106,13 +105,15 @@ rule exclude_missing:
         # generate data package and write to disk
         out_dir = os.path.dirname(output[0])
 
-        # in this case, we don't have anything additional to describe, so not
-        # views/annotations are included in the call to "update_package"
-        existing_pkg = input[1]
-
+        # node-level metadata
         metadata = {
             "title": "Filtered data",
             "description": "Rows with missing values have been excluded."
         }
 
-        pkg = pkgr.update_package(existing_pkg, resources, metadata=metadata, pkg_dir=out_dir)
+        # in this case, we don't have anything additional to describe, so no
+        # views/annotations are included in the call to "update_package"
+        existing_pkg = input[1]
+
+        pkg = pkgr.update_package(existing_pkg, resources, metadata=metadata, 
+                                  pkg_dir=out_dir)

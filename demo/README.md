@@ -1,5 +1,5 @@
-Io x DataDAG demos
-==================
+Io/DataDAG demos
+================
 
-The goal would be to include examples for each pipeline framework commonly used, along
-with a simple example of how one might use the library for a single/one-off script.
+Demo pipelines illustrating how one might create or modify an existing pipeline, in
+order to generated Io/DataDAG data packages.
