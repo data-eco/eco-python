@@ -1,0 +1,22 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Penguin Bill Length vs. Flipper Length (By Species)",
+  "data": {
+    "name": "penguins"
+  },
+  "mark": "point",
+  "encoding": {
+    "x": {
+      "field": "flipper_length_mm",
+      "type": "quantitative",
+      "scale": {"zero": false}
+    },
+    "y": {
+      "field": "bill_length_mm",
+      "type": "quantitative",
+      "scale": {"zero": false}
+    },
+    "color": {"field": "species", "type": "nominal"},
+    "shape": {"field": "species", "type": "nominal"}
+  }
+}
