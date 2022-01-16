@@ -9,9 +9,15 @@ data:
         id:
           type: 'string'
           required: true
+        name:
+          type: 'string'
         title:
           type: 'string'
           required: true
+        subtitle:
+          type: 'string'
+        url:
+          type: 'string'
     source:
       type: 'dict'
       required: true
@@ -22,11 +28,10 @@ data:
         title:
           type: 'string'
           required: true
+        subtitle:
+          type: 'string'
         url:
           type: 'string'
-    processing:
-      type: 'string'
-      default: 'raw'
     version:
       type: 'string'
       required: true
@@ -69,17 +74,25 @@ contributors:
         type: 'string'
       role:
         type: 'string'
+keywords:
+  type: 'list'
+  schema:
+    type: 'string'
+licenses:
+  type: 'list'
+  schema:
+    type: 'string'
 provenance:
   type: 'dict'
   schema:
-    action:
-      type: 'string'
     citations:
       type: 'list'
       schema:
         type: 'string'
-    contact:
-      type: 'string'
+    contacts:
+      type: 'list'
+      schema:
+        type: 'string'
     date:
       type: 'string'
     description:

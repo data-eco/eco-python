@@ -1,6 +1,7 @@
 """
 Io Packager class definition
 """
+from __future__ import annotations
 import datetime
 import frictionless
 import json
@@ -27,12 +28,11 @@ class Packager:
     def build_package(self, resources: Dict[str, Any],
                       annotations: Optional[List[str | pathlib.Path]] = [],
                       views: Optional[List[str | pathlib.Path | Dict[str, Any]]] = [],
-                      metadata: Optional[str | pathlib.Path | Dict[str, Any]] = {},
+                      node_metadata: Optional[str | pathlib.Path | Dict[str, Any]] = {},
+                      dag_metadata: Optional[str | pathlib.Path | Dict[str, Any]] = {},
                       profile="",
                       pkg_dir="./",
-                      include_summary=False,
-                      pretty_print=True,
-                      **kwargs):
+                      include_summary=False):
         """
         Builds an Io datapackage.
 
@@ -44,8 +44,10 @@ class Packager:
             List of filepaths to annotation files, or string annotations
         views: list
             List of filepaths to vega-lite views, or dict representations of such views
-        metadata: str|path|dict
-            [Optional] Additional metadata to include, either as a dict, or path to a yml/json file
+        node_metadata: str|path|dict
+            [Optional] Additional node-level metadata to include, either as a dict, or path to a yml/json file
+        dag_metadata: str|path|dict
+            [Optional] Additional DAG-level metadata to include, either as a dict, or path to a yml/json file
         profile: str
             [Optional] Name of metadata profile to use for validation, or "", for none
         pkg_dir: str|path
@@ -53,15 +55,14 @@ class Packager:
         include_summary: bool
             [Optional] Whether or not to compute & embed summary statistics at the time of package
             creation (default: False)
-        **kwargs: dict
-            [Optional] Additional global/DAG-level metadata to be included
         """
-        # parse user-provided processing stage (node-level) metadata
-        node_custom_mdata = self._parse_metadata(metadata)
+        # parse dag- and node-level metadata
+        node_mdata = self._parse_metadata(node_metadata)
+        dag_mdata = self._parse_metadata(dag_metadata)
 
         # if a metadata profile was specified, validate metadata against its schema
         if profile != "":
-            self._validate_metadata(node_custom_mdata, profile)
+            self._validate_metadata(node_mdata, profile)
 
         # determine location to build packages
         pkg_dir = os.path.realpath(os.path.expanduser(os.path.expandvars(pkg_dir)))
@@ -89,25 +90,17 @@ class Packager:
         node_uuid = str(uuid.uuid4())
 
         # create node metadata block
-        node_mdata = self.create_node(annotations, views)
-        node_mdata['metadata'] = node_custom_mdata
+        node = self.create_node(annotations, views)
+        node['metadata'] = node_mdata
 
         # add io-dag section to data package metadata
         pkg["io-dag"] = {
             "uuid": node_uuid,
             "nodes": {
-                node_uuid: node_mdata
+                node_uuid: node
             },
             "edges": []
         }
-
-        reserved_keys = pkg["io-dag"].keys()
-
-        for key in kwargs:
-            if key in reserved_keys:
-                raise Exception(f"Attempting to use reserved metadata field: {key}")
-
-            pkg["io-dag"][key] = kwargs[key]
 
         # add num rows/columns to metadata;
         # this may eventually be moved to the optional "compute_summary" section
@@ -128,10 +121,7 @@ class Packager:
 
         # write metadata to disk
         with open(os.path.join(pkg_dir, "datapackage.json"), "w") as fp:
-            if pretty_print:
-                json.dump(pkg, fp, indent=2, sort_keys=True)
-            else:
-                json.dump(pkg, fp)
+            json.dump(pkg, fp, indent=2, sort_keys=True)
 
     def update_package(self, existing: str | pathlib.Path, 
                        resources: Dict[str, Any],
@@ -141,7 +131,6 @@ class Packager:
                        profile="",
                        pkg_dir="./",
                        include_summary=False,
-                       pretty_print=True,
                        **kwargs):
         """
         Updates an existing Io datapackage.
@@ -172,11 +161,11 @@ class Packager:
         pkg_dir = os.path.realpath(os.path.expanduser(os.path.expandvars(pkg_dir)))
 
         # parse user-provided processing stage (node-level) metadata
-        node_custom_mdata = self._parse_metadata(metadata)
+        node_mdata = self._parse_metadata(metadata)
 
         # if a metadata profile was specified, validate metadata against its schema
         if profile != "":
-            self._validate_metadata(node_custom_mdata, profile)
+            self._validate_metadata(node_mdata, profile)
 
         # write resources to output dir
         # for now, resources are first written out, and then "describe_package()" is
@@ -188,12 +177,12 @@ class Packager:
         # scan package dir to construct initial datapackage
         pkg = frictionless.describe_package("*.csv", basepath=pkg_dir)
 
-        node_mdata = self.create_node(annotations, views, action='update_package')
-        node_mdata['metadata'] = node_custom_mdata
+        node = self.create_node(annotations, views, action='update_package')
+        node['metadata'] = node_mdata
 
         # extract io metadata + dag from existing data package
         if not os.path.exists(existing):
-            raise Exception("Invalid path to existing data package provided: {existing}")
+            raise Exception(f"Invalid path to existing data package provided: {existing}")
 
         with open(existing) as fp:
             existing_mdata = json.load(fp)
@@ -209,7 +198,7 @@ class Packager:
         pkg["io-dag"]["uuid"] = node_uuid
 
         # update provenance DAG
-        pkg["io-dag"]["nodes"][node_uuid] = node_mdata
+        pkg["io-dag"]["nodes"][node_uuid] = node
         pkg["io-dag"]["edges"].append({
             "source": prev_uuid,
             "target": node_uuid
@@ -217,10 +206,7 @@ class Packager:
 
         # write metadata to disk
         with open(os.path.join(pkg_dir, "datapackage.json"), "w") as fp:
-            if pretty_print:
-                json.dump(pkg, fp, indent=2, sort_keys=True)
-            else:
-                json.dump(pkg, fp)
+            json.dump(pkg, fp, indent=2, sort_keys=True)
 
     def create_node(self, annotations: List[str], views: List[Dict[str, Any]], action='build_package'):
         """
@@ -235,7 +221,7 @@ class Packager:
         """
         now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
 
-        node_mdata = {
+        node = {
             "name": "io-python",
             "action": action,
             "time":  now,
@@ -246,12 +232,12 @@ class Packager:
 
         # add annotations and views, if present
         for annot in annotations:
-            node_mdata["annot"].append(self.parse_annotation(annot))
+            node["annot"].append(self.parse_annotation(annot))
 
         for view in views:
-            node_mdata["views"].append(self.parse_view(view))
+            node["views"].append(self.parse_view(view))
 
-        return node_mdata
+        return node
 
     def _parse_metadata(self, mdata: str | pathlib.Path | Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -270,7 +256,7 @@ class Packager:
         # if path specified, attempt to load mdata from file
         if isinstance(mdata, (str, pathlib.Path,)):
             if not os.path.exists(mdata):
-                raise FileNotFoundError("Unable to find mdata at specified location!")
+                raise FileNotFoundError("Unable to find metadata at specified location!")
 
             with open(mdata) as fp:
                 mdata = yaml.load(fp, Loader=yaml.FullLoader)
@@ -346,7 +332,7 @@ class Packager:
                 contents = fp.read()
         else:
             if isinstance(annot, pathlib.Path):
-                raise Exception("Invalid annotation path provided: {annot}")
+                raise Exception(f"Invalid annotation path provided: {annot}")
 
             contents = annot
 
@@ -358,7 +344,7 @@ class Packager:
 
         Parameters
         ----------
-        annot: str|path|dict
+        view: str|path|dict
             either a vega-lite view loaded into a dict, or a path to a json file
             containg such a view
 

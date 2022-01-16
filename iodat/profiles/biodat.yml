@@ -9,19 +9,21 @@ datatype:
     - 'analysis_result'
     - 'experimental_dataset'
     - 'generic_dataset'
-disease:
+diseases:
   type: 'list'
   schema:
     type: 'string'
-doi:
+dois:
   type: 'list'
-platform:
-  type: 'string'
+platforms:
+  type: 'list'
+  schema:
+    type: 'string'
 measurement:
   type: 'string'
 reference:
   type: 'string'
-sample_type:
+sample_types:
   type: 'list'
   schema:
     type: 'string'

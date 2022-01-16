@@ -22,7 +22,7 @@ with open("LICENSE") as f:
 
 setup(
     name="iodat",
-    version="0.5.0",
+    version="0.6.0",
     classifiers=CLASSIFIERS,
     description="Io Python Library",
     long_description=readme,

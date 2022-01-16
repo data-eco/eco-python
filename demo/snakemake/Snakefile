@@ -54,7 +54,7 @@ rule fetch_data:
         # 2. kwargs, used to specify _workflow-_ or _dag-level_ metadata
 
         # node-level metadata
-        metadata = {
+        node_metadata = {
             "title": "Unprocessed data",
             "description": "Data downloaded via Seaborn, with no additional processing applied.",
             "source": {
@@ -67,14 +67,17 @@ rule fetch_data:
         }
 
         # dag-level metadata
-        contributors = {
-            "title": "Gunter",
-            "role": "maintainer"
+        dag_metadata = {
+            "name": "Raw Data", 
+            "contributors": {
+                "title": "Gunter",
+                "role": "maintainer"
+            }
         }
 
         # generate and save io data package
-        pkgr.build_package(resources, annot, views, metadata, name="Raw Data",
-                pkg_dir=out_dir, contributors=contributors)
+        pkgr.build_package(resources, annot, views, 
+                           node_metadata, dag_metadata, pkg_dir=out_dir)
 
 rule exclude_missing:
     input:
