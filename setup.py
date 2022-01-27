@@ -21,14 +21,14 @@ with open("LICENSE") as f:
     license = f.read()
 
 setup(
-    name="iodat",
+    name="eco",
     version="0.6.0",
     classifiers=CLASSIFIERS,
-    description="Io Python Library",
+    description="eco Python library",
     long_description=readme,
     author="V. Keith Hughitt",
-    author_email="keith.hughitt@nih.gov",
-    url="https://github.com/io-dat/python",
+    author_email="keith.hughitt@gmail.com",
+    url="https://github.com/khughitt/eco-python",
     license=license,
     scripts=["bin/io"],
     packages=find_packages(exclude=("tests", "docs")),

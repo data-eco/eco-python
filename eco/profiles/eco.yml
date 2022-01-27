@@ -44,7 +44,7 @@ columns:
 profile:
   type: 'string'
   allowed:
-    - "io"
+    - "eco"
     - "biodat"
 styles:
   type: 'dict'

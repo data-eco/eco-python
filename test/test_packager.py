@@ -6,18 +6,18 @@ import pathlib
 import pytest
 import pandas
 
-import iodat
+import eco
 
 
 class TestPackager:
 
     @pytest.fixture
     def packager(self):
-        from iodat.packager import Packager
+        from eco.packager import Packager
         return Packager()
 
     def test_packager(self, packager):
-        assert packager._version == iodat.__version__
+        assert packager._version == eco.__version__
 
     @pytest.fixture
     def empty_data(self):
@@ -33,8 +33,8 @@ class TestPackager:
     def check_vals(vals, val_name, load_fn, pkg_dir):
         with open(os.path.join(pkg_dir, 'datapackage.json')) as j:
             data = json.load(j)
-            uuid = data['io-dag']['uuid']
-            read_vals = data['io-dag']['nodes'][uuid][val_name]
+            uuid = data['eco']['uuid']
+            read_vals = data['eco']['nodes'][uuid][val_name]
             all_good = True
             if val_name in ('metadata',):
                 vals, read_vals = [vals], [read_vals]
@@ -90,5 +90,5 @@ class TestPackager:
             packager.build_package(empty_data, pkg_dir=pkg_dir, **metadata)
             with open(os.path.join(pkg_dir, 'datapackage.json')) as j:
                 data = json.load(j)
-                read_metadata = {key: data['io-dag'][key] for key in metadata.keys()}
-                assert read_metadata == metadasta
+                read_metadata = {key: data['eco'][key] for key in metadata.keys()}
+                assert read_metadata == metadata

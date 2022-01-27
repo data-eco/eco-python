@@ -1,5 +1,5 @@
 """
-Io UI classes
+eco CLI
 """
 import os
 import yaml
@@ -8,7 +8,7 @@ from rich import print
 
 
 class CLI:
-    """Io Command-line Interface class"""
+    """Eco Command-line Interface class"""
 
     def __init__(self):
         """Initializes a new CLI instance"""
@@ -116,7 +116,7 @@ class CLI:
         self._dat = self._dat.set_index(self._dat.columns[0])
 
     def _load_pkg(self):
-        """Loads io package yaml"""
+        """Loads eco package yaml"""
         # check to make sure a valid
         pkg_path = self._args["target"]
 
@@ -130,7 +130,7 @@ class CLI:
 
     def _get_args(self):
         """Parses input and returns arguments"""
-        parser = ArgumentParser(description="Io Command-line Data Explorer")
+        parser = ArgumentParser(description="Eco Command-line Data Explorer")
 
         parser.add_argument(
             "action",
@@ -142,7 +142,7 @@ class CLI:
         parser.add_argument(
             "-t",
             "--target",
-            help="Path to target Io datapackage directory",
+            help="Path to target eco datapackage directory",
             default=os.getcwd(),
         )
 
@@ -167,8 +167,8 @@ class CLI:
 
     def _print_header(self):
         """Prints output header"""
-        # io metadata
-        mdat = self._pkg["io"]
+        # eco metadata
+        mdat = self._pkg["eco"]
 
         # resource metadata
         for resource in self._pkg["resources"]:
@@ -181,7 +181,7 @@ class CLI:
         num_cols = len(res["schema"]["fields"])
 
         print("[cyan]========================================[/cyan]")
-        print(":microscope:", "[bold green]Io Explorer[/bold green]")
+        print(":microscope:", "[bold green]eco explorer[/bold green]")
         print("[cyan]========================================[/cyan]")
         print(f"[cyan]Title[/cyan]: {mdat['data']['dataset']['title']}")
         print(f"[cyan]Source[/cyan]: {mdat['data']['datasource']['title']}")

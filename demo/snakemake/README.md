@@ -1,5 +1,5 @@
-Io-DataDAG Example Pipeline
-===========================
+eco Example Pipeline
+====================
 
 **Setup**:
 
@@ -7,7 +7,7 @@ Use [conda](https://docs.conda.io/en/latest/) to create a new environment and in
 the necessary components:
 
 ```
-conda create -n io-snakemake-demo --file requirements.txt
+conda create -n eco-snakemake-demo --file requirements.txt
 ```
 
 **Usage**:
@@ -15,7 +15,7 @@ conda create -n io-snakemake-demo --file requirements.txt
 Activate the conda environment using:
 
 ```
-conda activate io-snakemake-demo
+conda activate eco-snakemake-demo
 ```
 
 Next, to run the pipeline, call:

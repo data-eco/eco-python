@@ -1,14 +1,14 @@
-io-python
-=========
+eco-python
+==========
 
 **Status (Jan 2022)**: Planning / experimental.
 
 Overview
 --------
 
-_io-dag ~ metadata for data workflows_
+_eco ~ metadata for data workflows_
 
-`io-python` is a python library for creating and interacting with [Frictionless Data
+`eco-python` is a python library for creating and interacting with [Frictionless Data
 Packages](https://frictionlessdata.io/) which include a Directed Acyclic Graph (DAG)
 representation of data provenance, along with optional annotations and views for each
 stage in processing.

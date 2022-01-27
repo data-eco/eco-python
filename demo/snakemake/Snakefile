@@ -1,12 +1,12 @@
 """
-Snakemake x Io (DataDAG) example pipeline
+eco Snakemake example pipeline
 """
 import os
 import glob
 import pandas as pd
 import seaborn as sns
 
-from iodat.packager import Packager
+from eco.packager import Packager
 
 rule all:
     input:
@@ -24,10 +24,10 @@ rule fetch_data:
         # representation of the Palmers Penguins dataset
         dat = sns.load_dataset('penguins')
 
-        # below are the steps relating used to describe and generate an initial Io
+        # below are the steps relating used to describe and generate an initial eco
         # datapackage
 
-        # first, we create an Io Packager instance
+        # first, we create an eco Packager instance
         pkgr = Packager()
 
         # directory where we want to output our data package to

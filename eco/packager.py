@@ -1,5 +1,5 @@
 """
-Io Packager class definition
+eco Packager class definition
 """
 from __future__ import annotations
 import datetime
@@ -10,9 +10,9 @@ import pathlib
 import sys
 import uuid
 import yaml
-from iodat.summary import compute_summary
-from iodat import __version__
-from iodat.util import load_tbl
+from eco.summary import compute_summary
+from eco import __version__
+from eco.util import load_tbl
 from cerberus import Validator
 from typing import Any, Dict, List, Optional
 from pkg_resources import resource_filename
@@ -20,7 +20,7 @@ from pkg_resources import resource_filename
 class Packager:
     def __init__(self):
         """
-        Creates a new Io Packager instance
+        Creates a new eco Packager instance
         """
         self._schema_dir = os.path.abspath(resource_filename(__name__, "profiles"))
         self._version = __version__
@@ -34,7 +34,7 @@ class Packager:
                       pkg_dir="./",
                       include_summary=False):
         """
-        Builds an Io datapackage.
+        Builds an eco datapackage.
 
         Parameters
         ----------
@@ -93,8 +93,8 @@ class Packager:
         node = self.create_node(annotations, views)
         node['metadata'] = node_mdata
 
-        # add io-dag section to data package metadata
-        pkg["io-dag"] = {
+        # add "eco" section to data package metadata
+        pkg["eco"] = {
             "uuid": node_uuid,
             "nodes": {
                 node_uuid: node
@@ -133,7 +133,7 @@ class Packager:
                        include_summary=False,
                        **kwargs):
         """
-        Updates an existing Io datapackage.
+        Updates an existing eco datapackage.
 
         Parameters
         ----------
@@ -191,15 +191,15 @@ class Packager:
         node_uuid = str(uuid.uuid4())
 
         # copy over metadata section from previous stage
-        pkg["io-dag"] = existing_mdata["io-dag"]
+        pkg["eco"] = existing_mdata["eco"]
 
         # store uuid of previous step, and update
-        prev_uuid = pkg["io-dag"]["uuid"]
-        pkg["io-dag"]["uuid"] = node_uuid
+        prev_uuid = pkg["eco"]["uuid"]
+        pkg["eco"]["uuid"] = node_uuid
 
         # update provenance DAG
-        pkg["io-dag"]["nodes"][node_uuid] = node
-        pkg["io-dag"]["edges"].append({
+        pkg["eco"]["nodes"][node_uuid] = node
+        pkg["eco"]["edges"].append({
             "source": prev_uuid,
             "target": node_uuid
         })
@@ -222,7 +222,7 @@ class Packager:
         now = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f%z')
 
         node = {
-            "name": "io-python",
+            "name": "eco-python",
             "action": action,
             "time":  now,
             "version": self._version,
@@ -267,7 +267,7 @@ class Packager:
 
     def _validate_metadata(self, mdata: Dict[str, Any], profile: str):
         """
-        Validates metadata against a particular profile known to Io
+        Validates metadata against a particular profile known to eco
 
         NOTE (jan 8, 2022): at present, this functionality is directed at specific
         "known" metadata profiles.
@@ -283,13 +283,13 @@ class Packager:
         profile: str
             Name of the profile to use for validation
         """
-        # load base "io" profile
-        with open(os.path.join(self._schema_dir, "io.yml")) as schema_fp:
+        # load base "eco" profile
+        with open(os.path.join(self._schema_dir, "eco.yml")) as schema_fp:
             schema = yaml.load(schema_fp, Loader=yaml.FullLoader)
 
         # if an alternate profile is specified, extend base io schema with the
         # supported fields associated with that profile
-        if "profile" != "io":
+        if "profile" != "eco":
             if profile not in schema['profile']['allowed']:
                 raise Exception("Unrecognized profile specified!")
 
