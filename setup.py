@@ -14,7 +14,7 @@ CLASSIFIERS = [
     "Operating System :: MacOS",
 ]
 
-with open("README.rst") as f:
+with open("README.md") as f:
     readme = f.read()
 
 with open("LICENSE") as f:
@@ -30,6 +30,6 @@ setup(
     author_email="keith.hughitt@gmail.com",
     url="https://github.com/khughitt/eco-python",
     license=license,
-    scripts=["bin/io"],
+    scripts=["bin/eco"],
     packages=find_packages(exclude=("tests", "docs")),
 )

@@ -1,5 +1,5 @@
 """
-eco Packager class definition
+Eco Packager class definition
 """
 from __future__ import annotations
 import datetime
