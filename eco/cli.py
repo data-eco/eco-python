@@ -51,9 +51,25 @@ class CLI:
         pkg_dir = os.path.dirname(pkg_path)
 
         pkg = self._load_pkg(pkg_path)
-        resource = self._get_resource(pkg_dir, pkg)
 
-        print(resource.head().to_markdown())
+        mdat = pkg['eco']['metadata']
+
+        #steel_blue1
+        print(f"[bold white]{mdat['data']['dataset']['title']}[/bold white]")
+        print(f"[bold steel_blue3]{mdat['data']['dataset']['id']}[/bold steel_blue3] ([light_coral]{mdat['data']['source']['title']}[/light_coral])")
+
+        # print dag overview
+        num_nodes = len(pkg['eco']['nodes'])
+        num_edges = len(pkg['eco']['edges'])
+
+        print("[bold steel_blue1]Provenance DAG:[/bold steel_blue1]")
+        print(f"- nodes: {num_nodes}")
+        print(f"- edges: {num_edges}")
+
+        # row/column numbers/ids?
+        # dag / annots / view summary?
+
+        # check for biodat, etc. profile and render profile-specific info?
 
     def _parse_pkg_path(self, path):
         """
@@ -154,7 +170,7 @@ class CLI:
 
 List of supported commands:
    info     Show info for data package
-   search   Searches Eco repositories
+   search   Search Eco repositories
    rows     Show row summary
    cols     Show column summary
    summary  Show overall summary
