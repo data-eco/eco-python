@@ -2,16 +2,14 @@
 Eco CLI
 """
 import logging
-import json
 import os
 import sys
-import yaml
-import tempfile
 import pandas as pd
-import seaborn as sns
+from textwrap import wrap
 from argparse import ArgumentParser
 from rich import print
 from typing import Any, Dict, List, Optional
+from eco.entities.datapackage import DataPackage
 
 class CLI:
     """Eco Command-line Interface class"""
@@ -19,8 +17,6 @@ class CLI:
     def __init__(self):
         """Initializes a new CLI instance"""
         self._conf_dir = self._get_conf_dir()
-
-        self._print_header()
 
         cmd = self._get_cmd()
 
@@ -50,26 +46,104 @@ class CLI:
         pkg_path = self._parse_pkg_path(args.path)
         pkg_dir = os.path.dirname(pkg_path)
 
-        pkg = self._load_pkg(pkg_path)
+        pkg = DataPackage(pkg_path)
 
-        mdat = pkg['eco']['metadata']
+        # print header block with dataset title, id, and source
+        divider = "[cyan]" + 80 * '=' + "[/cyan]"
+        title = "\n".join(wrap(pkg.dataset['title'], 80))
 
-        #steel_blue1
-        print(f"[bold white]{mdat['data']['dataset']['title']}[/bold white]")
-        print(f"[bold steel_blue3]{mdat['data']['dataset']['id']}[/bold steel_blue3] ([light_coral]{mdat['data']['source']['title']}[/light_coral])")
+        print(divider)
+        print(f"[bold light_coral]{pkg.dataset['id']}[/bold light_coral]") 
+        print(f"[light_coral]{pkg.source['title']}[/light_coral]")
+        print(f"[bold white]{title}[/bold white]")
+
+        #  description = "\n".join(wrap(pkg.provenance['description'], 80))
+        #  print()
+        #  print(f"[white]{description}[/white]")
+
+        print(divider)
+
+        # rows/columns
+        resource = pkg.get_resource()
+        num_cols = len(resource['schema']['fields'])
+
+        print("[bold steel_blue1]Overview[/bold steel_blue1]")
+        print(f" columns: {num_cols} ({pkg.columns})")
+        print(f" rows: ? ({pkg.rows})")
 
         # print dag overview
-        num_nodes = len(pkg['eco']['nodes'])
-        num_edges = len(pkg['eco']['edges'])
+        num_nodes = len(pkg.dag['nodes'])
+        num_edges = len(pkg.dag['edges'])
 
-        print("[bold steel_blue1]Provenance DAG:[/bold steel_blue1]")
-        print(f"- nodes: {num_nodes}")
-        print(f"- edges: {num_edges}")
+        print("[bold steel_blue1]DAG:[/bold steel_blue1]")
+        print(f" nodes: {num_nodes}")
+        print(f" edges: {num_edges}")
 
-        # row/column numbers/ids?
-        # dag / annots / view summary?
+        # print view info
+        view_names = pkg.get_view_names()
+
+        if len(view_names) > 0:
+            print("[bold steel_blue1]Views:[/bold steel_blue1]")
+            
+            for view in view_names:
+                print(f"- {view}")
 
         # check for biodat, etc. profile and render profile-specific info?
+
+        #  "assay": "microarray",
+        #  "datatype": "experimental_dataset",
+        #  "platforms": "GPL25401",
+        #  "sample_types": "patient",
+        #  "diseases": [
+        #    "D009101",
+        #    "D000075122"
+        #  ],
+        #  "species": 9606
+        if pkg.profile == 'biodat':
+            species = pkg.biodat['species']
+            if isinstance(species, list):
+                species = ", ".join(species)
+
+            diseases = pkg.biodat['diseases']
+            if isinstance(diseases, list):
+                diseases = ", ".join(diseases)
+
+            print("[bold spring_green3]BioDat[/bold spring_green3]", ":dna:")
+            print(f"Assay: [spring_green3]{pkg.biodat['assay']}[/spring_green3]")
+            print(f"Species: [spring_green3]{species}[/spring_green3]")
+
+            if diseases != "":
+                print(f"Diseases: [spring_green3]{diseases}[/spring_green3]")
+
+    def viz(self):
+        """Visualize datapackage view"""
+        # parse "info"-specific args
+        parser = ArgumentParser(description='Visualize datapackage view')
+
+        parser.add_argument(
+            "path",
+            nargs="?",
+            type=str,
+            default=".",
+            help='Path to data package (default: "./")',
+        )
+
+        parser.add_argument(
+            "--view",
+            type=str,
+            help='Name of view to be rendered (defaults to first view)',
+        )
+
+        # parse remaining parts of command args
+        input_args = [x for x in sys.argv[1:] if x != "viz"]
+        args, unknown = parser.parse_known_args(input_args)
+
+        pkg_path = self._parse_pkg_path(args.path)
+        pkg_dir = os.path.dirname(pkg_path)
+
+        pkg = DataPackage(pkg_path)
+
+        pkg.plot(view_name=args.view)
 
     def _parse_pkg_path(self, path):
         """
@@ -120,16 +194,6 @@ class CLI:
 
         return pkg_path
 
-    def _load_pkg(self, pkg_path: str) -> Dict[str, Any]:
-        # load metadata
-        with open(pkg_path) as fp:
-            if pkg_path.endswith("json"):
-                pkg = json.load(fp)
-            else:
-                pkg = yaml.load(fp, Loader=yaml.FullLoader)
-
-        return pkg
-
     def _get_resource(self, pkg_dir: str, pkg: Dict[str, Any], index=0) -> pd.DataFrame:
         """
         load specified data package resource
@@ -148,9 +212,13 @@ class CLI:
 
     def _get_conf_dir(self) -> str:
         """determines config dir to use or raises an error if none found"""
+        # if "ECO_CONF_DIR" environment variable is set, use it
+        if "ECO_CONF_DIR" in os.environ:
+            conf_dir = os.environ.get("ECO_CONF_DIR")
         # config dir (linux / osx)
-        conf_dir = os.getenv("XDG_CONFIG_HOME",
-                             os.path.expanduser("~/Library/Preferences/"))
+        else:
+            conf_dir = os.getenv("XDG_CONFIG_HOME",
+                                 os.path.expanduser("~/Library/Preferences/"))
 
         if not os.path.exists(conf_dir):
             raise Exception("Unable to find system configuration dir! Are you sure you are running a supported OS?..")
@@ -211,13 +279,13 @@ List of supported commands:
         # execute method with same name as sub-command
         return args.command
 
-    def _print_header(self):
-        """
-        prints Eco header
-        """
-        print("[cyan]========================================[/cyan]")
-        print(":microscope:", "[bold spring_green2]Eco[/bold spring_green2]")
-        print("[cyan]========================================[/cyan]")
+    #  def _print_header(self):
+    #      """
+    #      prints Eco header
+    #      """
+    #      print("[cyan]========================================[/cyan]")
+    #      print(":microscope:", "[bold spring_green2]Eco[/bold spring_green2]")
+    #      print("[cyan]========================================[/cyan]")
 
     def _setup_logger(self):
         """Sets up logger to print messages to STDOUT"""

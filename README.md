@@ -60,6 +60,32 @@ Goals
   - basic DAG functionality for any datapackage
   - additional metadata fields used for visualization, etc., if provided
   
+Installation
+------------
+
+### General setup
+
+```
+conda create -n eco-python --file requirements.txt
+
+git clone https://github.com/data-eco/eco-python
+cd eco-python
+
+pip install -e .
+```
+
+### Terminal plots
+
+If you are using the [kitty terminal](https://sw.kovidgoyal.net/kitty/) for linux,
+visualization rendering support can be enabled by installed the
+[pixcat](https://github.com/mirukana/pixcat) library:
+
+```
+pip install --user pixcat
+```
+
+In the future, support for additional terminals may be added.
+
 Limitations
 -----------
 
@@ -72,7 +98,6 @@ TODO
 - [ ] extend support to alt file formats
   - [ ] tsv
   - [ ] feather/arrow
-- [ ] allow json to be passed in for metadata
 - [ ] describe motivation & use of profiles
 - [ ] allow arbitrary schemas to be provided & used for validation?
   - [ ] modify "profile" to accept a path/url/dict?

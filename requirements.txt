@@ -1,5 +1,9 @@
 python>=3.9
 pyarrow>=5.0
+altair
+altair_saver
+vega-cli
+vega-lite-cli
 cerberus
 frictionless
 pandas

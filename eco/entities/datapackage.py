@@ -37,6 +37,13 @@ class DataPackage:
         self.columns = pkg['eco']['metadata']['columns']
         self.provenance = pkg['eco']['metadata']['provenance']
 
+        # check for known profiles
+        self.profile = None
+
+        if "biodat" in pkg['eco']['metadata']:
+            self.profile = 'biodat'
+            self.biodat = pkg['eco']['metadata']['biodat']
+
         # set initial focus in DAG to node representing current data stage
         self.focus = self.uuid
 
