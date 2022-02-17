@@ -4,12 +4,14 @@ Eco CLI
 import logging
 import os
 import sys
+import yaml
 import pandas as pd
 from textwrap import wrap
 from argparse import ArgumentParser
 from rich import print
 from typing import Any, Dict, List, Optional
 from eco.entities.datapackage import DataPackage
+from eco.entities.project import Project
 
 class CLI:
     """Eco Command-line Interface class"""
@@ -21,6 +23,7 @@ class CLI:
         cmd = self._get_cmd()
 
         self._setup_logger()
+        self._load_config()
 
         getattr(self, cmd)()
 
@@ -40,8 +43,7 @@ class CLI:
         )
 
         # parse remaining parts of command args
-        input_args = [x for x in sys.argv[1:] if x != "info"]
-        args, unknown = parser.parse_known_args(input_args)
+        args, unknown = parser.parse_known_args(self._cmd_args)
 
         pkg_path = self._parse_pkg_path(args.path)
         pkg_dir = os.path.dirname(pkg_path)
@@ -115,6 +117,45 @@ class CLI:
             if diseases != "":
                 print(f"Diseases: [spring_green3]{diseases}[/spring_green3]")
 
+    def proj(self):
+        """Project-related commands"""
+        # parse "proj"-specific args
+        parser = ArgumentParser(description='Eco project information')
+
+        parser.add_argument(
+            "project",
+            nargs="?",
+            type=str,
+            default="",
+            help='Project ID',
+        )
+
+        # parse remaining parts of command args
+        args, unknown = parser.parse_known_args(self._cmd_args)
+
+        # load project configs
+        proj_cfg_dir = os.path.join(os.path.dirname(self.config_path), "projects")
+
+        projects = {}
+
+        for file in os.listdir(proj_cfg_dir):
+            if os.path.splitext(file)[1] in ['.yml', '.yaml']:
+                with open(os.path.join(proj_cfg_dir, file)) as fp:
+                    cfg = yaml.load(fp, Loader=yaml.FullLoader)
+                    projects[cfg['id']] = Project.from_dict(cfg)
+
+        self.projects = projects
+
+        # if project id specified, check to make sure its valid
+        if args.project != "":
+            valid_ids = projects.keys()
+
+            if args.project not in valid_ids:
+                msg = f"Unknown project id specified! Valid choices are: {', '.join(valid_ids)}"
+                raise Exception(msg)
+
+            projects[args.project].info()
+
     def viz(self):
         """Visualize datapackage view"""
         # parse "info"-specific args
@@ -135,8 +176,7 @@ class CLI:
         )
 
         # parse remaining parts of command args
-        input_args = [x for x in sys.argv[1:] if x != "viz"]
-        args, unknown = parser.parse_known_args(input_args)
+        args, unknown = parser.parse_known_args(self._cmd_args)
 
         pkg_path = self._parse_pkg_path(args.path)
         pkg_dir = os.path.dirname(pkg_path)
@@ -218,12 +258,12 @@ class CLI:
         # config dir (linux / osx)
         else:
             conf_dir = os.getenv("XDG_CONFIG_HOME",
-                                 os.path.expanduser("~/Library/Preferences/"))
+                                 os.path.expanduser("~/Library/Preferences/eco"))
 
         if not os.path.exists(conf_dir):
             raise Exception("Unable to find system configuration dir! Are you sure you are running a supported OS?..")
 
-        return os.path.join(conf_dir, "eco")
+        return conf_dir
 
     def _get_cmd(self):
         """
@@ -238,13 +278,16 @@ class CLI:
 
 List of supported commands:
    info     Show info for data package
+   proj     Project related commands
    search   Search Eco repositories
    rows     Show row summary
    cols     Show column summary
-   summary  Show overall summary
-   view     Eco view commands
    viz      Dataset visualization
 ''')
+
+# text for possible future commands
+#  view     Eco view commands
+#  summary  Show summary
 
         parser.add_argument('command', help='Sub-command to run')
 
@@ -269,23 +312,24 @@ List of supported commands:
         self.verbose = args.verbose
         self.config_path = args.config
 
-        valid_cmds = ['info', 'dag', 'search', 'summary', 'view', 'viz']
+        valid_cmds = ['info', 'proj', 'search', 'viz']
 
         if args.command not in valid_cmds:
             print(f"[ERROR] Unrecognized command specified: {args.command}!")
             parser.print_help()
             sys.exit()
 
+        # store remaining non-global arguments
+        global_args = []
+        self._cmd_args = [x for x in sys.argv[2:] if x not in global_args]
+
         # execute method with same name as sub-command
         return args.command
 
-    #  def _print_header(self):
-    #      """
-    #      prints Eco header
-    #      """
-    #      print("[cyan]========================================[/cyan]")
-    #      print(":microscope:", "[bold spring_green2]Eco[/bold spring_green2]")
-    #      print("[cyan]========================================[/cyan]")
+    def _load_config(self):
+        """Loads main eco config"""
+        with open(self.config_path) as fp:
+            self.config = yaml.load(fp, Loader=yaml.FullLoader)
 
     def _setup_logger(self):
         """Sets up logger to print messages to STDOUT"""
