@@ -183,6 +183,20 @@ class CLI:
 
         pkg = DataPackage(pkg_path)
 
+        views = pkg.get_views()
+        view_names = [x['name'] for x in views]
+
+        # default to first view, if none specified
+        if args.view is None and len(views) > 0:
+            args.view = views[0]['name']
+
+        if len(views) == 0:
+            print("No views found for specified datapackage & node!")
+            sys.exit()
+        elif args.view not in view_names:
+            print(f"Requested view ({args.view}) not found for specified datapackage & node!")
+            sys.exit()
+
         pkg.plot(view_name=args.view)
 
     def _parse_pkg_path(self, path):

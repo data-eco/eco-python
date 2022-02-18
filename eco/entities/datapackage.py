@@ -95,7 +95,7 @@ class DataPackage:
         plot_dir = os.path.join(self._pkg_dir, "plot")
 
         if not os.path.exists(plot_dir):
-            os.makedirs(plot_dir, mode=755)
+            os.makedirs(plot_dir, mode=0o755)
 
         plot_path = os.path.join(plot_dir, f"{view_name}.png")
 
