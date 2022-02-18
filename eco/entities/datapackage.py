@@ -20,7 +20,7 @@ class DataPackage:
                 raise Exception(f"Unexpected file extension for datapackage \"{pkg_path}\"")
 
         self._pkg = pkg
-        self._pkg_dir = os.path.dirname(pkg_path)
+        self._pkg_dir = str(os.path.dirname(pkg_path))
 
         self.uuid = pkg['eco']['uuid']
 
@@ -57,6 +57,11 @@ class DataPackage:
         return self.dag['nodes'][node_uuid]['annot']
 
     def get_resource(self, ind=0):
+        filename = self._pkg['resources'][ind]['path']
+        infile = os.path.join(self._pkg_dir, filename)
+        return pd.read_csv(infile)
+
+    def get_resource_info(self, ind=0):
         return self._pkg['resources'][ind]
 
     def get_views(self, node_uuid=None):
@@ -87,7 +92,12 @@ class DataPackage:
             raise Exception("Unrecognized view name specified!")
 
         # check to see if view has previously been generated, and if so, reuse
-        plot_path = os.path.join(self._pkg_dir, f"{view_name}.png")
+        plot_dir = os.path.join(self._pkg_dir, "plot")
+
+        if not os.path.exists(plot_dir):
+            os.makedirs(plot_dir, mode=755)
+
+        plot_path = os.path.join(plot_dir, f"{view_name}.png")
 
         if not os.path.exists(plot_path):
             # load spec

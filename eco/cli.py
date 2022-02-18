@@ -66,7 +66,7 @@ class CLI:
         print(divider)
 
         # rows/columns
-        resource = pkg.get_resource()
+        resource = pkg.get_resource_info()
         num_cols = len(resource['schema']['fields'])
 
         print("[bold steel_blue1]Overview[/bold steel_blue1]")
@@ -111,11 +111,11 @@ class CLI:
                 diseases = ", ".join(diseases)
 
             print("[bold spring_green3]BioDat[/bold spring_green3]", ":dna:")
-            print(f"Assay: [spring_green3]{pkg.biodat['assay']}[/spring_green3]")
-            print(f"Species: [spring_green3]{species}[/spring_green3]")
+            print(f" Assay: [spring_green3]{pkg.biodat['assay']}[/spring_green3]")
+            print(f" Species: [spring_green3]{species}[/spring_green3]")
 
             if diseases != "":
-                print(f"Diseases: [spring_green3]{diseases}[/spring_green3]")
+                print(f" Diseases: [spring_green3]{diseases}[/spring_green3]")
 
     def proj(self):
         """Project-related commands"""
